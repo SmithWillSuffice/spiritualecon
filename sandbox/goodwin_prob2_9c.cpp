@@ -1,10 +1,9 @@
 /*
  Example GNU-GSL ODE solver for Goodwin wage--output model
  
- g++ -Wall -I/usr/include/ -c goodwin_to_csv.cpp &&
- g++ -L/usr/local/lib goodwin_to_csv.o -lgsl -lgslcblas -lpopt -o goodwin_to_csv
+ g++ -Wall -I/usr/include/ -c goodwin_prom2_9d.cpp &&
+ g++ -L/usr/local/lib goodwin_prom2_9d.o -lgsl -lgslcblas -lpopt -o goodwin_prom2_9d
 
- Version 2.0  has cmdl parsing options, and file output
 */
 
 #include <iostream>
@@ -17,6 +16,7 @@
 
 #include <popt.h>
 #include <string.h>
+#include <time.h>
 
 using namespace std;
 
@@ -150,9 +150,21 @@ int main ( int argc, const char *argv[] )
     double t = 0.0, t1 = 100.0;
     double y[2] = {  params.w0,  params.Y0 }; // initial conditions: { wages, output }
     
+    
+    time_t sysTime;
+    struct tm  *tmstruct;
+    char*  chTime;
+
+    sysTime  = time(0);
+    tmstruct = localtime(&sysTime);
+    chTime = (char*)malloc(sizeof(char)*80);
+    strftime(chTime,79,"%Y-%m-%d",tmstruct);
+    
     ofstream pdout;
     char csvfile[80];
-    sprintf(csvfile,"%s_v%d_N%d.pd",PROGRAM_NAME,VERSION,params.Nsteps);
+    // TODO look for sim_data direcotry and mkdir if it does not exist.
+    sprintf(csvfile,"./sim_data/%s_v%d_N%d_%s.pd",PROGRAM_NAME,
+            VERSION,params.Nsteps,chTime);
     pdout.open(csvfile);
     pdout << "# Goodwin model data output." << endl;
     pdout << "# r="<< params.r << " , c=" << params.r 
