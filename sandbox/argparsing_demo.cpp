@@ -1,7 +1,7 @@
 /*
  Argument parsing example.
  
- g++ -Wall -I/usr/include/ -c argparsin-demo.cpp && g++ -L/usr/local/lib argparsing_demo.o  -o argparsing_demo
+ g++ -Wall -c argparsin-demo.cpp && g++  argparsing_demo.o  -o argparsing_demo
 */
 #include <ctype.h>
 #include <stdio.h>
@@ -17,6 +17,7 @@ struct goodwin_params {
     double b;
     double w0;
     double Y0;
+    int Nsteps;
 };
 
 void getopts( int argc, char **argv,  goodwin_params* gparams ) {
@@ -25,11 +26,14 @@ void getopts( int argc, char **argv,  goodwin_params* gparams ) {
 
     opterr = 0;
 
-    while (( opt = getopt (argc, argv, "r:c:a:b:w:y:Y:")) != -1)
+    while (( opt = getopt (argc, argv, "n:r:c:a:b:w:y:Y:")) != -1)
     switch ( opt ) {
         case 'r':
-        gparams->r = atof(optarg);
-        break;
+            gparams->Nsteps = atoi(optarg);
+            break;
+        case 'r':
+            gparams->r = atof(optarg);
+            break;
         case 'c':
             gparams->c = atof(optarg);
             break;
@@ -62,12 +66,12 @@ void getopts( int argc, char **argv,  goodwin_params* gparams ) {
         abort ();
     }
 
-    printf ("r = %f, c = %f, a = %f, b = %f, w0 = %f, Y0 = %f\n",
-            gparams->r, gparams->c, gparams->a, gparams->b, gparams->w0, gparams->Y0);
+    printf ("Nstesp = %d, r = %f, c = %f, a = %f, b = %f, w0 = %f, Y0 = %f\n",
+            gparams->Nsteps, gparams->r, gparams->c, gparams->a, gparams->b, 
+            gparams->w0, gparams->Y0);
 
     for (index = optind; index < argc; index++)
     printf ("Non-option argument %s\n", argv[index]);
-    
 }
 
 
@@ -81,6 +85,7 @@ int  main (int argc, char **argv)
     gparams.b = 1.0;
     gparams.w0 = 1.0;
     gparams.Y0 = 1.0;
+    gparams.Nsteps = 100;
     getopts( argc, argv, &gparams );
     return 0;
 }
