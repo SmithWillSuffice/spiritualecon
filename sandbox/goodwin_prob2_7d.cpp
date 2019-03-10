@@ -167,13 +167,6 @@ int main ( int argc, const char *argv[] )
     parseArguments( argc, argv, &params, &pathname );
     printf("After parseArgs , pathname = '%s'\n",pathname);
     outfile= strformat("%s",pathname);
-    assert( (params.Nsteps > 1 && params.Nsteps < NMAX) );
-    assert( params.r > 0.); 
-    assert( params.c > 0.); 
-    assert( params.a > 0.); 
-    assert( params.b > 0.); 
-    assert( params.w0 > 0.);
-    assert( params.Y0 > 0.);
     if ( params.Nsteps>NMAX ) {
         cout << "Nsteps exceeded maximum.  Resetting Nsteps to  NMAX ="<<NMAX<<endl;
         params.Nsteps = NMAX;
@@ -225,7 +218,6 @@ int main ( int argc, const char *argv[] )
         int status = mkdir(thedir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         if ( status == -1 ) printf("Could not mkdir for '%s'\n",thedir);
     }
-    
     pdout.open(csvfile);
     pdout << "# Goodwin model data output." << endl;
     pdout << "# r="<< params.r << " , c=" << params.r 
