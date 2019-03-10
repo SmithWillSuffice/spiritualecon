@@ -216,15 +216,10 @@ int main ( int argc, const char *argv[] )
     fs::path emptypath = "";
     fs::path fpath = csvfile;
     fs::path dname = fpath.parent_path();
-    if ( dname.compare(emptypath)==0 ) {
-        dname = fpath ;
-        //cout << "dname was empty, reassigning to " << dname << endl;
-    }
-    //cout << " pathname = " << pathname << "\n dname = " << dname << endl;
+    cout << " pathname = " << pathname << "\n dname = " << dname << endl;
     const char * thedir = dname.c_str();
-    //cout << " thedir = " << thedir << endl;
     struct stat info;
-    if( stat( thedir, &info ) != 0 ) {
+    if( stat( thedir, &info ) != 0 && dname.compare(emptypath)!=0 ) {
         printf(" dir path '%s' does not exist, so\n",thedir);
         printf(" we will now create this directory for you.\n");
         int status = mkdir(thedir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -255,6 +250,6 @@ int main ( int argc, const char *argv[] )
     }
     pdout.close();
     gsl_odeiv2_driver_free (d);
+    cout<< "Done.  See output in "<< outfile <<endl;
     return 0;
-    
 }
