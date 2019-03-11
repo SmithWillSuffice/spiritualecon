@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <unistd.h>
 #include <string>
+#include <memory>
+#include <sstream>
 #include <cstdarg> // suplies va_end()
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -17,7 +19,6 @@
 
 #include <popt.h>
 #include <string.h>
-#include <memory>
 #include "json/json.h"
 
 using namespace std;
@@ -182,13 +183,26 @@ int main ( int argc, const char *argv[] )
     double t = 0.0, t1 = 100.0;
     double y[2] = {  params.w0,  params.Y0 }; // initial conditions: { wages, output }
     
-    Json::Value AllData(Json::arrayValue);
+    //Json::Value allData(Json::arrayValue);
+    Json::Value allData;
     Json::Value param_obj;
     param_obj["r"] = params.r;
     param_obj["c"] = params.c;
     param_obj["a"] = params.a;
     param_obj["b"] = params.b;
     param_obj["w0"] = params.w0;
+    //cout << "Writing value params.Y0 = " << params.Y0 << " to json output"<<endl;
+    //std::stringstream ss(stringstream::in | stringstream::out); 
+    //ss << fixed << params.Y0;
+    //ss.setf(ios::fixed);
+    //ss << setprecision(6) << params.Y0;
+    //ss >> setprecision(6) >> param_obj["Y0"];
+    //char chY0[80];
+    //sprintf(chY0, "%.6f", params.Y0);
+    //cout << "formatted y0 = " << chY0 << endl;
+    //ss << setprecision(3) << chY0;
+    //ss >> setprecision(3) >> param_obj["Y0"];
+    //param_obj["Y0"] = chY0;
     param_obj["Y0"] = params.Y0;
     param_obj["Nsteps"] = params.Nsteps;
     Json::Value t_obj;
@@ -213,19 +227,23 @@ int main ( int argc, const char *argv[] )
         outputs.append(Json::Value( y[1] ));
     }
     
-    t_obj["time (s)"] = times;
-    w_obj["wage"] = wages;
-    Y_obj["output"] = outputs;
-    AllData.append(param_obj);
-    AllData.append(t_obj);
-    AllData.append(w_obj);
-    AllData.append(Y_obj);
+    //t_obj["time (s)"] = times;
+    //w_obj["wage"] = wages;
+    //Y_obj["output"] = outputs;
+    allData["params"] = param_obj;
+    allData["data"]["times"] = times;
+    allData["data"]["wages"] = wages;
+    allData["data"]["outputs"] = outputs;
+    //AllData.append(t_obj);
+    //AllData.append(w_obj);
+    //AllData.append(Y_obj);
     Json::StreamWriterBuilder builder;
     builder["commentStyle"] = "None";
     builder["indentation"] = "   ";
+    builder["precision"] = 15;
     std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
     std::ofstream outputFileStream( outfile );
-    writer -> write( AllData, &outputFileStream );
+    writer -> write( allData, &outputFileStream );
     
     gsl_odeiv2_driver_free (d);
     return 0;
