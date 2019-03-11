@@ -9,6 +9,8 @@
 #include <fstream>
 #include <iomanip>
 #include <unistd.h>
+#include <string>
+#include <cstdarg> // suplies va_end()
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv2.h>
@@ -34,8 +36,19 @@ struct goodwinParams {
     int Nsteps;
 };
 
+std::string strformat( const string fmt_str,...)
+{
+    va_list ap;
+    char *fp = NULL;
+    va_start(ap, fmt_str);
+    vasprintf(&fp, fmt_str.c_str(), ap);
+    va_end(ap);
+    std::unique_ptr<char[]> formatted(fp);
+    return std::string(formatted.get());
+}
 
-static void parseArguments( int argc, const char **argv, goodwinParams* gparams )
+static void parseArguments( int argc, const char **argv, 
+                            goodwinParams* gparams , char ** outfile )
 {
     poptContext optCon;
     const struct poptOption optionsTable[] = {
@@ -56,6 +69,8 @@ static void parseArguments( int argc, const char **argv, goodwinParams* gparams 
             "Set initial output level." },
         { "Y0 ", 'Y', POPT_ARG_DOUBLE, &gparams->Y0, 0,
             "Set initial output level." },
+        { "output", 'o', POPT_ARG_STRING, outfile, 0,
+            "Pandas format CSV file output pathname (max 180 chars)." },
         {NULL, 0, 0, NULL, 0, }
     };
     int i;
@@ -141,7 +156,14 @@ int main ( int argc, const char *argv[] )
     params.w0 = 3.0;
     params.Y0 = 4.0;
     params.Nsteps = 100;
-    parseArguments( argc, argv, &params );
+    string outfile = "goodwin_prob2_9a.json";
+    char * pathname;
+    pathname = (char*)malloc(sizeof(char)*180);
+    //printf("Before parseArgs , pathname = '%s'\n",pathname);
+    parseArguments( argc, argv, &params, &pathname );
+    //printf("After parseArgs , pathname = '%s'\n",pathname);
+    //cout << " strcmp(pathname,'') = " << strcmp(pathname,"") <<endl;
+    if ( strcmp(pathname,"")!=0 )  outfile= strformat("%s",pathname);
     if ( params.Nsteps>NMAX ) {
         cout << "Nsteps exceeded maximum.  Resetting Nsteps to  NMAX ="<<NMAX<<endl;
         params.Nsteps = NMAX;
@@ -202,7 +224,7 @@ int main ( int argc, const char *argv[] )
     builder["commentStyle"] = "None";
     builder["indentation"] = "   ";
     std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-    std::ofstream outputFileStream("./goodwin.json");
+    std::ofstream outputFileStream( outfile );
     writer -> write( AllData, &outputFileStream );
     
     gsl_odeiv2_driver_free (d);
